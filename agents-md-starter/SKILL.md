@@ -14,6 +14,16 @@ Generate a project-specific `AGENTS.md` by analyzing the codebase and filling in
 
 Load the appropriate template at the start of each invocation. Never hardcode the template content — always read it from `assets/`.
 
+## Prerequisites
+
+This skill requires the following CLI tools to be installed in the execution environment:
+
+| Tool | Used in | Purpose |
+|------|---------|---------|
+| `git` | 3a, 3b, 3g | `git remote -v` for repo name, `git ls-files` for generated files, `git log` / `git branch` for branch and commit conventions |
+
+All file-reading operations (config files, build manifests, directory listings) are handled by the agent runtime's built-in tools and do not require additional CLI dependencies.
+
 ---
 
 ## Workflow
@@ -22,25 +32,35 @@ Load the appropriate template at the start of each invocation. Never hardcode th
 
 Check if `AGENTS.md` exists in the project root. If it does:
 - Show the user the first 10-15 lines so they can assess it.
-- Ask: "AGENTS.md already exists. Overwrite it, skip, or merge?" Do not proceed until the user answers.
+- Ask: "AGENTS.md already exists. Overwrite it or skip?" Do not proceed until the user answers. If running in a non-interactive environment, default to **skip** (preserve the existing file).
 
 ### Step 2: Detect language
 
-Determine the user's language from the current conversation:
+Determine the document language with the following priority:
+
+1. **README signal** (most reliable): Read the first 20-30 lines of the project README to detect its primary language. This reflects the project's target audience.
+2. **Conversation signal** (fallback): If no README exists, use the user's natural language from the conversation, filtering out technical terms.
+
 - **Chinese (中文)** → use `assets/AGENTS.zh-CN.md`
 - **Other / English** → use `assets/AGENTS.md`
 
-If ambiguous, ask the user which language they prefer.
+If still ambiguous in an interactive environment, ask the user.
+
+**Non-interactive mode**: Use the same README-based detection. If the README cannot be read or its language is ambiguous, default to **English** (`assets/AGENTS.md`).
 
 ### Step 3: Analyze the project
 
-Systematically gather information. Run independent checks in parallel where possible. Collect the following:
+Systematically gather information. Run independent checks concurrently if the runtime supports it; otherwise sequential execution is acceptable. Limit file reads to what's necessary: structured config manifests (e.g., `package.json`, `go.mod`, `Cargo.toml`) may be read in full; for source code analysis (3h), read at most 3-5 representative files.
+
+Collect the following:
+
+If a git command fails (e.g., git is not installed, the project is not a git repository, or there are no commits yet), skip that specific check gracefully and use the next-best information source or leave the corresponding AGENTS.md section commented out.
 
 #### 3a. Identity & Purpose
 - **Project name**: Check `git remote -v` for the repo name, then `package.json` → `name`, `Cargo.toml` → `[package] name`, `go.mod` → module path, `pyproject.toml` → `[project] name`, `pom.xml` → `<artifactId>`, or the root directory name as fallback.
 - **Description**: Check README (first 50 lines), `package.json` → `description`, `Cargo.toml` → `[package] description`, `pyproject.toml` → `[project] description`.
 
-#### 3b. Tech Stack & Runtime
+#### 3b. Tech Stack & Dependencies
 Look for these files and extract version constraints:
 | File | Extracted info |
 |------|---------------|
@@ -55,11 +75,14 @@ Look for these files and extract version constraints:
 
 Also check for multiple languages (monorepo with `frontend/` + `backend/` etc.).
 
+Identify the package manager and lock file(s): `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `go.sum`, `Cargo.lock`, `poetry.lock`, `Gemfile.lock`. Note any vendored or in-tree dependencies.
+
+Check for code generation setup and generated files: protobuf, GraphQL, OpenAPI, gRPC. Run `git ls-files` to detect generated file patterns (e.g., `.pb.go`, `_generated.ts`).
+
 #### 3c. Build & Run
 - Look for build/run scripts in `package.json` → `scripts`, `Makefile`, `Justfile`, `Taskfile`.
 - Check for common build tool configs: `webpack.config.*`, `vite.config.*`, `tsconfig.json`, `Makefile`.
 - Identify the build artifact path if obvious (e.g., `dist/`, `target/`, `build/`).
-- Run `git ls-files` to check for generated files (protobuf `.pb.go`, GraphQL codegen, etc.).
 
 #### 3d. Test
 - Look for test scripts: `package.json` → `scripts.test`, `Makefile` test targets, pytest config, `jest.config.*`, `vitest.config.*`.
@@ -75,19 +98,13 @@ Also check for multiple languages (monorepo with `frontend/` + `backend/` etc.).
 - Identify key directories: source code, tests, docs, config, scripts, deployment.
 - For monorepos, note which directory handles which language/responsibility.
 
-#### 3g. CI/CD
-- Check `.github/workflows/`, `.gitlab-ci.yml`, `Jenkinsfile`, `azure-pipelines.yml`, `circleci/`.
-- Extract common CI commands (test suite, lint, build steps).
+#### 3g. CI/CD & Branching Conventions
+- Check for CI config files: `.github/workflows/`, `.gitlab-ci.yml`, `Jenkinsfile`, `azure-pipelines.yml`, `circleci/`. Note CI dashboard URL if discoverable.
+- Check git branching and commit conventions: run `git log --oneline -20` and `git branch -a` to infer patterns (e.g., `feature/*`, `fix/*`, conventional commits).
 
-#### 3h. Dependencies & Package Management
-- Identify the package manager and lock file(s): `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `go.sum`, `Cargo.lock`, `poetry.lock`, `Gemfile.lock`.
-- Note any vendored or in-tree dependencies.
-- Check for code generation setup: protobuf, GraphQL, OpenAPI, gRPC.
-
-#### 3i. Conventions (from existing code)
-- Scan a few source files for error handling patterns (custom error types, error wrapping, panic vs. return).
+#### 3h. Error Handling & Logging
+- Read 3-5 representative source files (e.g., entry points or core modules) to detect error handling patterns (custom error types, error wrapping, panic vs. return).
 - Check for logging libraries and patterns.
-- Look at git log for branching/commit conventions: `git log --oneline -20`.
 
 ### Step 4: Fill the template
 
@@ -112,7 +129,7 @@ Read the chosen template file from `assets/`. Then fill each section:
 
 ### Step 5: Interactive clarification
 
-Before writing the final file, present a summary of findings and ask about the remaining uncertain items:
+Before writing the final file, present a summary of findings and ask about the remaining uncertain items. **If running in a non-interactive environment, skip this step** — proceed to Step 6 with any low-confidence sections wrapped in HTML comments.
 
 1. **Show what you found**: Brief bullet list of detected tech stack, build commands, test framework, etc.
 2. **Ask about gaps**: For each major section where you have low confidence, ask the user. Group questions efficiently — don't ask one at a time.
