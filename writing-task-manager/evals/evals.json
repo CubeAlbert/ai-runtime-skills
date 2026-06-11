@@ -1,0 +1,85 @@
+{
+  "skill_name": "writing-task-manager",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "cold-start-record-single-file",
+      "prompt": "I'm editing my resume at resume.md. After reviewing it, here are the things I want to fix:\n\n- Add a summary section at the top\n- Fix the dates in the experience section (they're wrong on the second job)\n- Add my new GitHub URL\n\nSave these tasks for me so I can track them.",
+      "expected_output": "The skill runs in Mode 2 (Record). It should: (1) initialize .writing-tasks/ and writing-task-manager.md if missing, (2) append three new - [ ] lines to .writing-tasks/resume.md, (3) ensure the index has one line `- [ ] ./resume.md` (or `.\\resume.md` on Windows), (4) keep the index sorted.",
+      "files": [
+        {
+          "path": "resume.md",
+          "content": "# Resume\n\n## Experience\n- Software Engineer at Acme, Jan 2020 - Present\n- Junior Developer at Foo, Jan 2018 - Dec 2019\n"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "check-mode-with-partials",
+      "prompt": "What's still open on my paper?",
+      "expected_output": "The skill runs in Mode 1 (Check). Step 1 (always-on partial reminder) fires first and surfaces any - [~] lines from the existing task files. The user must respond to each partial (continue or mark finished) before the rest of the activation proceeds. Then Step 5 reads writing-task-manager.md and displays the unfinished-file list to the user.",
+      "files": [
+        {
+          "path": ".writing-tasks/writing-task-manager.md",
+          "content": "# Writing tasks\n\n- [ ] ./chapters/methods.md\n- [ ] ./intro.md\n"
+        },
+        {
+          "path": ".writing-tasks/chapters/methods.md",
+          "content": "- [ ] Rewrite the sampling paragraph for clarity\n- [~] Add the new citation from Smith 2024\n- [x] Fix typo in the section heading\n"
+        },
+        {
+          "path": ".writing-tasks/intro.md",
+          "content": "- [ ] Add thesis statement\n- [ ] Proofread final paragraph\n"
+        },
+        {
+          "path": "chapters/methods.md",
+          "content": "(empty — placeholder source file)\n"
+        },
+        {
+          "path": "intro.md",
+          "content": "(empty — placeholder source file)\n"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "mark-finished-removes-from-index",
+      "prompt": "I just finished adding the summary section to resume.md. Mark it done.",
+      "expected_output": "The skill runs in Update mode. The line in .writing-tasks/resume.md matching 'Add a summary section' should be changed from - [ ] to - [x]. Since resume.md's task file now contains no [ ] or [~] lines (only the new [x]), the corresponding line in writing-task-manager.md should be removed. The index should be re-sorted.",
+      "files": [
+        {
+          "path": ".writing-tasks/writing-task-manager.md",
+          "content": "# Writing tasks\n\n- [ ] ./resume.md\n"
+        },
+        {
+          "path": ".writing-tasks/resume.md",
+          "content": "- [ ] Add a summary section\n- [x] Fix typo in the section heading\n"
+        },
+        {
+          "path": "resume.md",
+          "content": "# Resume\n\n(in progress)\n"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "add-with-dedup",
+      "prompt": "Add another task to resume.md: rewrite the experience section. Also, save a task that says 'Add a summary section' to resume.md.",
+      "expected_output": "The skill runs in Mode 2. The new description 'rewrite the experience section' is not present in the existing task file, so it is appended as - [ ]. The description 'Add a summary section' is already present in the file (in any state), so the dedup check (Step 4) skips it — no duplicate line is added.",
+      "files": [
+        {
+          "path": ".writing-tasks/writing-task-manager.md",
+          "content": "# Writing tasks\n\n- [ ] ./resume.md\n"
+        },
+        {
+          "path": ".writing-tasks/resume.md",
+          "content": "- [x] Add a summary section\n- [ ] Fix the dates in the experience section\n"
+        },
+        {
+          "path": "resume.md",
+          "content": "# Resume\n\n(in progress)\n"
+        }
+      ]
+    }
+  ]
+}
