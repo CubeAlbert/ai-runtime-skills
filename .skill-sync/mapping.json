@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "include_dirs": ["agents-md-starter", "writing-task-manager"],
+  "exclude_subdirs_in_skill": ["evals"],
+  "agents": {
+    "claude-code": {
+      "enabled": true,
+      "target": "~/.claude/skills/"
+    },
+    "kilo": {
+      "enabled": true,
+      "target": "~/.kilo/skills/"
+    }
+  }
+}
