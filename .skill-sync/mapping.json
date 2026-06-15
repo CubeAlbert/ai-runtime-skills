@@ -1,7 +1,13 @@
 {
   "version": 1,
-  "include_dirs": ["agents-md-starter", "writing-task-manager"],
-  "exclude_subdirs_in_skill": ["evals"],
+  "include_dirs": [
+    "agents-md-starter",
+    "writing-task-manager",
+    "interview-project-starter",
+    "project-bootstrap",
+    "project-checkpoint"
+  ],
+  "exclude_subdirs_in_skill": ["evals", "test-data"],
   "agents": {
     "claude-code": {
       "enabled": true,
