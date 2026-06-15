@@ -1,0 +1,47 @@
+{
+  "skill_name": "project-checkpoint",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Save my progress. I just finished implementing the basic squash logic in src/commands/squash.go — the tests pass and it works. Next I'll start on the interactive TUI mode.",
+      "expected_output": "task.md updated: 'Implement basic squash logic' marked ✅, next subtask 'Add interactive mode' marked 🔄. current.md refreshed with new Current SubTask and Next Step. decision.md unchanged. Output shows clear before/after summary.",
+      "files": [],
+      "setup": {
+        "description": "Mid-Phase 2 project with one subtask 🔄 (basic squash logic). Git shows changes to squash.go. User completed the subtask.",
+        "create_files": [
+          "docs/current.md",
+          "docs/task.md",
+          "docs/decision.md"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "prompt": "Checkpoint. We got a lot done this session: the squash command is fully working including interactive mode, I wrote all the unit tests, and we made a decision to switch from bubbletea to huh for the TUI library. Also, the cleanup command is blocked because we need the new git permissions API first.",
+      "expected_output": "Multiple task.md updates: squash subtasks → ✅, interactive mode → ✅, unit tests → ✅. Cleanup command marked ⏸️ with reason. decision.md appended with new Decision 4 (huh over bubbletea). current.md refreshed — Next SubTask advances, Current Blocker set for cleanup. Design/plan confirmation prompt shown.",
+      "files": [],
+      "setup": {
+        "description": "Active Phase 2 with squash command in progress. Git shows multiple file changes. Session produced multiple completions, a new decision, and a blocker.",
+        "create_files": [
+          "docs/current.md",
+          "docs/task.md",
+          "docs/decision.md"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "prompt": "Save progress.",
+      "expected_output": "No changes detected. Git shows no meaningful diff, conversation has no task completions. Agent reports 'No changes detected. The project state appears to already be up to date.'",
+      "files": [],
+      "setup": {
+        "description": "Project state already up to date. current.md and task.md are consistent. Git working tree is clean.",
+        "create_files": [
+          "docs/current.md",
+          "docs/task.md",
+          "docs/decision.md"
+        ]
+      }
+    }
+  ]
+}
