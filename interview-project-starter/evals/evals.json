@@ -1,0 +1,59 @@
+{
+  "skill_name": "interview-project-starter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a coding interview in 2 hours and they sent me a requirements doc for a task management API. The doc is in docs/requirements.md. Can you analyze it and set up the project plan?",
+      "expected_output": "Skill reads docs/requirements.md, analyzes it as a Python+FastAPI task management REST API. Generates all five docs/ files and CLAUDE.md. Task breakdown includes: project setup, database/models, CRUD endpoints, filtering, input validation, tests. Core tasks tagged 🔴 (CRUD, filtering), bonus tagged 🟡 (validation, tests). No frontend (requirements don't mention UI/demo). CLAUDE.md references Python/FastAPI/SQLite tech stack. Decision.md records tech stack rationale.",
+      "files": [],
+      "setup": {
+        "description": "Empty project with docs/requirements.md — a Python FastAPI task management API",
+        "create_files": ["docs/requirements.md"]
+      },
+      "assertions": [
+        {"id": "all-files-exist", "description": "All 6 required files are generated: docs/current.md, docs/design.md, docs/plan.md, docs/task.md, docs/decision.md, and CLAUDE.md"},
+        {"id": "tech-stack-python-fastapi", "description": "Tech stack correctly identifies Python + FastAPI + SQLite as specified in requirements"},
+        {"id": "no-frontend-generated", "description": "No frontend/UI tasks are generated — requirements do not mention UI, demo, or user-facing interaction"},
+        {"id": "has-core-priority-tasks", "description": "Core features (CRUD operations, filtering by status/assignee) are tagged as core (🔴) priority"},
+        {"id": "has-bonus-tasks", "description": "Bonus items (input validation, unit tests) are tagged as bonus (🟡) priority"},
+        {"id": "claude-md-points-to-docs", "description": "CLAUDE.md references or points to docs/ files for detailed context"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "面试项目要求做一个命令行工具，用来批量重命名文件。需求在 docs/requirements.md 里。帮我分析一下然后生成实现计划。",
+      "expected_output": "Skill reads docs/requirements.md in Chinese, analyzes it as a Go CLI batch file renamer. Generates all five docs/ files and CLAUDE.md. Task breakdown covers: regex matching, dry-run, undo, recursive processing, case conversion as core 🔴; JSON config and colored output as bonus 🟡; unit tests as bonus 🟡. No web UI (CLI tool). CLAUDE.md references Go tech stack.",
+      "files": [],
+      "setup": {
+        "description": "Empty project with docs/requirements.md — a Go CLI batch file renamer (Chinese requirements)",
+        "create_files": ["docs/requirements.md"]
+      },
+      "assertions": [
+        {"id": "all-files-exist", "description": "All 6 required files are generated"},
+        {"id": "tech-stack-go", "description": "Tech stack correctly identifies Go as specified in the requirements"},
+        {"id": "no-web-ui", "description": "No web/frontend tasks are generated — it is a CLI tool with no mention of UI or demo"},
+        {"id": "chinese-requirements-parsed", "description": "Chinese requirements document is correctly parsed — all features are reflected in tasks"},
+        {"id": "core-features-priority", "description": "Core CLI features (regex rename, dry-run preview, undo, recursive, case conversion) are tagged as core (🔴)"},
+        {"id": "bonus-features-priority", "description": "Bonus items (JSON config file, colored terminal output, unit tests) are tagged as bonus (🟡)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to prepare for a take-home interview project — building a URL shortener service. The requirements are in docs/requirements.md. It needs user auth, click analytics, and the doc mentions they want to see a demo. Help me plan this out.",
+      "expected_output": "Skill reads docs/requirements.md, infers appropriate tech stack (since not specified), generates all five docs/ files and CLAUDE.md. Because requirements explicitly mention 'working demo', includes a web UI for the dashboard and URL creation. Because requirements mention 'automated tests', includes test tasks. Task breakdown: auth (register/login), URL creation/redirect, click tracking, analytics dashboard, web UI, tests. Decision.md records tech stack inference (since requirements say 'choose whatever is appropriate').",
+      "files": [],
+      "setup": {
+        "description": "Empty project with docs/requirements.md — a URL shortener with demo requirement (tech stack unspecified)",
+        "create_files": ["docs/requirements.md"]
+      },
+      "assertions": [
+        {"id": "all-files-exist", "description": "All 6 required files are generated"},
+        {"id": "tech-stack-inferred", "description": "A reasonable tech stack is inferred and documented — rationale recorded in decision.md"},
+        {"id": "has-web-ui-for-demo", "description": "Web UI tasks are included because requirements explicitly mention 'working demo'"},
+        {"id": "has-automated-tests", "description": "Test tasks are included because requirements explicitly mention 'automated tests'"},
+        {"id": "has-auth-features", "description": "Authentication features (user registration and login) are included as core tasks"},
+        {"id": "has-analytics-features", "description": "Analytics features (click tracking, dashboard) are included in the task breakdown"}
+      ]
+    }
+  ]
+}
