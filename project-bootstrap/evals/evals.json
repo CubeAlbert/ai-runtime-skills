@@ -1,0 +1,45 @@
+{
+  "skill_name": "project-bootstrap",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just cloned this project. There's nothing set up yet — bootstrap it so I can start working. We're building a CLI tool called 'git-helper' that automates common git workflows.",
+      "expected_output": "Skill detects no docs/ directory, asks whether to create it. After confirmation, creates docs/ with initialized templates (current.md, design.md, plan.md, task.md, decision.md). Output shows the files that were created and next steps for the user.",
+      "files": [],
+      "setup": {
+        "description": "Empty project with minimal files — no docs/ directory",
+        "create_files": [
+          "README.md"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "prompt": "Restore project state. I want to continue working on the git-helper project. Last session we finished Phase 1 and were about to start implementing the 'git squash' command.",
+      "expected_output": "Skill reads docs/current.md and outputs the restored state (Current Phase, Current Task, Current SubTask, Blocker, Next Step). Then loads relevant context from design.md and task.md based on the current state. The 'git squash' task should be visible in the output.",
+      "files": [],
+      "setup": {
+        "description": "Project with fully populated docs/ directory — simulating a project mid-development",
+        "create_files": [
+          "docs/current.md",
+          "docs/design.md",
+          "docs/plan.md",
+          "docs/task.md",
+          "docs/decision.md"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "prompt": "Bootstrap the project and show me the current state. We've been working on 'git-helper' — I wrote current.md manually last week but I'm not sure if the other doc files exist yet.",
+      "expected_output": "Skill finds docs/ and current.md with content. Detects that design.md, plan.md, task.md are all missing and offers to create them. After user input, outputs the restored state from current.md and notes which files were created vs already present.",
+      "files": [],
+      "setup": {
+        "description": "docs/ exists but only current.md has content — design, plan, task are missing",
+        "create_files": [
+          "docs/current.md"
+        ]
+      }
+    }
+  ]
+}
