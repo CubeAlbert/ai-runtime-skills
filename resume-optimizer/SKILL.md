@@ -135,7 +135,29 @@ Cross-reference with the JD requirements. For each section/entry in the CV, deci
 
 ### Step 5: Edit CV_CHN.tex
 
-Open the copied `{subfolder}/CV_CHN.tex` and apply the plan from Step 4. Work section by section:
+Open the copied `{subfolder}/CV_CHN.tex` and apply the plan from Step 4. Work section by section.
+
+**⚠️ LaTeX 编辑的编码陷阱：** LaTeX 源码包含大量反斜杠和花括号，在搜索、匹配、替换时容易与工具/脚本的转义规则冲突。注意以下四个高频问题：
+
+1. **反斜杠转义冲突** — `\h`、`\s`、`\\` 在不同上下文中含义不同：
+   - 在 regex 中 `\s` 是空白字符类，`\h` 是水平空白；但 LaTeX 中 `\section`、`\hspace` 是命令。搜索 LaTeX 命令时使用 **普通字符串匹配** 而非 regex，或在 regex 中将反斜杠双写：`\\section`。
+   - LaTeX 换行符 `\\` 是一个命令（两个字符），但在 Python/ruby 字符串中 `\\` 表示一个字面反斜杠。匹配时需写 `\\\\`（四个反斜杠）才能命中源码中的 `\\`。
+   - **建议**：优先使用 Edit 工具的 `old_string` 精确匹配，避免 regex 搜索 LaTeX 命令。
+
+2. **花括号与 f-string/template 冲突** — LaTeX 大量使用 `{}`（命令参数、环境边界）：
+   - 在 Python f-string 中 `{` 和 `}` 是占位符，需双写 `{{` / `}}` 才能输出字面花括号。
+   - 在 JavaScript template literal 中 `${` 是插值语法，需转义。
+   - **建议**：不要用 f-string/template literal 拼接 LaTeX 代码段；改用普通字符串拼接或直接使用 Edit 工具逐段替换。
+
+3. **Tab 与空格的不可见差异** — `.tex` 文件中可能混用 tab 和空格做缩进：
+   - Edit 工具的 `old_string` 必须 **逐字符完全匹配**（包括不可见字符）。源码中是 tab，你粘贴空格就匹配不上。
+   - **建议**：从文件中原样复制要替换的文本（Read → Copy → Paste 到 `old_string`），不要手打。
+
+4. **短字符串搜索假阳性** — 搜索太短的 LaTeX 命令可能命中大量无关位置：
+   - 例如搜索 `\item` 会命中所有列表项；搜索 `\begin` 会命中所有环境。
+   - **建议**：搜索时带上足够的上下文（如 `\item \textbf{Java}` 而非仅 `Java`），或使用 Grep 的 `-C` 查看上下文确认后再替换。
+
+**Always verify** by re-reading the edited region after each change — a single stray backslash or unmatched brace breaks compilation.
 
 1. **Summary/Profile section**: Rewrite to align with this specific role and company. Mention the target role by name if it fits naturally.
 2. **Skills section**: Reorder so JD-matching skills appear first. Cut skills that are irrelevant to this role. Add **only** skills that are present elsewhere in the master CV but were moved.
@@ -230,23 +252,25 @@ After successful compilation, verify that `CV_CHN.pdf` and `CV_EN.pdf` exist in 
 
 ### Step 9: Extract candidate name
 
-Read the English CV (`CV_EN.tex`) to extract the candidate's English name. Look for patterns like:
+Open `{subfolder}/CV_EN.tex` and locate `\begin{document}`. Scan the **first 50 lines** after `\begin{document}` — this is where personal information (name, email, phone, LinkedIn) typically appears in a resume header.
 
-- `\name{Albert Li}`
-- `\author{Li Ming}`
-- Or simply the first prominent name text in the document header
+From these 50 lines, try to identify the candidate's name by looking at:
 
-This name will be used in the output filename. If the name is unclear or inconsistent between the two CVs, **use the English CV version**.
+- Explicit LaTeX name commands (e.g., `\name{Albert Li}`, `\author{Li Ming}`)
+- Large/bold text near the top (e.g., `\Large{Albert Li}`, `\textbf{Li Ming}`)
+- Text adjacent to an email address (e.g., `Albert Li \\ albert@example.com`)
+- Any other personal information context in the header
+
+If the name is **confidently identified**, record it for use in the output filename. Strip spaces for the filename: `Albert Li` → `AlbertLi`.
+
+If the name **cannot be confidently identified** within the first 50 lines, **do not block the workflow**. Set the name aside as `TBD` and continue to Step 10 — the merge step will prompt the user.
 
 ### Step 10: Merge PDFs
 
-Run the bundled Python script:
+**If the name was successfully extracted in Step 9**, construct the output filename as:
 
-```bash
-python {skill_path}/scripts/merge_pdfs.py \
-  {subfolder}/CV_CHN.pdf \
-  {subfolder}/CV_EN.pdf \
-  --output {subfolder}/{EnglishName}_CV_{Position}_{Company}.pdf
+```
+{EnglishName}_CV_{Position}_{Company}.pdf
 ```
 
 - `{EnglishName}` — from Step 9, with spaces removed or joined (e.g., `LiMing`, `AlbertLi`)
@@ -255,21 +279,70 @@ python {skill_path}/scripts/merge_pdfs.py \
 
 Example: `LiMing_CV_SeniorDeveloper_HSBC.pdf`
 
+Then run the merge script:
+
+```bash
+python {skill_path}/scripts/merge_pdfs.py \
+  {subfolder}/CV_CHN.pdf \
+  {subfolder}/CV_EN.pdf \
+  --output {subfolder}/{EnglishName}_CV_{Position}_{Company}.pdf
+```
+
+**If the name could not be extracted (TBD)**, ask the user:
+
+> 我无法自动从简历中提取英文姓名。请提供候选人的英文名（如 AlbertLi、LiMing），我将继续合并 PDF。
+
+Do **not** block the workflow earlier — compile both PDFs first, then ask for the name only when you reach this step. Once the user provides the name, proceed with the merge command above.
+
 Use `python {skill_path}/scripts/merge_pdfs.py --help` if you need to see all options.
 
-### Step 11: Report summary
+### Step 11: Generate summary and report
 
-Tell the user what was done:
+Write a `summary.md` file into the subfolder (`{subfolder}/summary.md`) with the following structure:
+
+```markdown
+# 简历优化摘要 — {Company}
+
+**职位**: {Position}  
+**输出**: {merged_pdf_filename}  
+**优化日期**: {YYYY-MM-DD}
+
+---
+
+## 变更明细
+
+### 裁剪（Cuts）
+- （列出每个被移除的项目/技能，说明原因）
+
+### 优先级调整（Priority Boosts）
+- （列出每个被提前的项目/技能，说明与 JD 的匹配点）
+
+### 措辞调整（Rephrases）
+- （列出每个措辞变更：原表述 → 新表述，说明调整原因）
+
+---
+
+## 文件清单
+
+| 文件 | 说明 |
+|------|------|
+| `CV_CHN.tex` | 优化后的中文简历（只读副本） |
+| `CV_EN.tex` | 优化后的英文简历（只读副本） |
+| `CV_CHN.pdf` | 编译后的中文 PDF |
+| `CV_EN.pdf` | 编译后的英文 PDF |
+| `{merged_filename}` | **最终合并版**（中文在前，英文在后） |
+| `summary.md` | 本文件 |
+
+---
+
+> 母版文件 `CV_CHN.tex` 和 `CV_EN.tex`（工作目录根）未被修改。
+```
+
+After writing the file, tell the user briefly where the output is:
 
 ```
-已完成 HSBC 的简历优化：
-
-  - 裁剪: 移除了 2 个 .NET 项目（与 Java 岗位无关）
-  - 优先级调整: 将 AI/ML 相关经验提前到技能区第一位
-  - 措辞调整: 3 处金融领域术语改为通用表述
-  - 输出: HSBC/LiMing_CV_SeniorDeveloper_HSBC.pdf
-
-母版文件 CV_CHN.tex 和 CV_EN.tex 未被修改。
+已完成 {Company} 的简历优化，输出 {subfolder}/{merged_filename}
+详细变更见 {subfolder}/summary.md
 ```
 
 ---
@@ -305,4 +378,4 @@ Tell the user what was done:
 11. Cross-validates: counts all 6 categories, finds 技术栈-Frameworks mismatch → fixes the missing item in CV_EN.tex. Re-counts → all match.
 12. Compiles both with `pdflatex`.
 13. Merges → `./HSBC/LiMing_CV_SeniorJavaDeveloper_HSBC.pdf`
-14. Reports summary to user.
+14. Writes `summary.md` to `./HSBC/` and reports the output path to user.
