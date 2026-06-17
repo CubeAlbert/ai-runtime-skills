@@ -5,7 +5,8 @@
     "writing-task-manager",
     "interview-project-starter",
     "project-bootstrap",
-    "project-checkpoint"
+    "project-checkpoint",
+	"resume-optimizer"
   ],
   "exclude_subdirs_in_skill": ["evals", "test-data"],
   "agents": {
