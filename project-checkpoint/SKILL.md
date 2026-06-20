@@ -127,18 +127,25 @@ If the conversation includes a significant new decision that isn't already in `d
 
 ### Step 7: Check for design/plan changes
 
-Ask the user explicitly:
+Review the conversation analysis from Step 2c for evidence that design or plan topics were discussed during the session:
 
-> Do `docs/design.md` or `docs/plan.md` need updates based on what we did this session? If so, which specific sections should I update, and what changed?
+- Architecture decisions, component design, data model changes, technology choices
+- Timeline/milestone changes, scope adjustments, new dependencies, roadmap shifts
 
-If the user names specific sections:
+**If evidence exists** — the conversation touched on design or planning:
+
+> We discussed design/plan topics this session (e.g., `<brief example>`). Do `docs/design.md` or `docs/plan.md` need updates? If so, which specific sections should I update, and what changed?
+
+**If no evidence** — design and plan were not discussed:
+
+Skip to Step 8. No prompt is needed.
+
+---
+
+When the user names specific sections to update:
 - Read only that section of `design.md` or `plan.md`.
 - Append the new information at the end of the specified section. **Never replace or rewrite the section.**
 - If the user asks about something that would require restructuring the whole file, recommend they edit it manually instead.
-
-If the user says no, skip.
-
-**This step is mandatory.** Do not silently skip it — the user may forget to mention design changes, and the prompt serves as a reminder.
 
 ### Step 8: Output change summary
 
@@ -158,7 +165,7 @@ docs/current.md:
 docs/decision.md:
   + Decision 4 — Use bubbletea over fyne for interactive TUI
 
-No design or plan changes requested.
+Design/plan: no changes discussed. To update, tell me which sections to edit.
 ```
 
 If nothing changed, say so honestly:
