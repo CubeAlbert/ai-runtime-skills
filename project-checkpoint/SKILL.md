@@ -18,6 +18,7 @@ The skill updates only what changed. It never rewrites entire files when a targe
 | `docs/decision.md` | **Free** — append only | Add new decisions made during the session |
 | `docs/design.md` | **Restricted** — user must confirm each section | Append to specific sections only; never rewrite the whole file |
 | `docs/plan.md` | **Restricted** — user must confirm each section | Append to milestones or dependencies; never rewrite the whole file |
+| `CLAUDE.md` / `AGENTS.md` | **Restricted** — user must confirm each change | Targeted edits to sections invalidated by session changes (layout, commands, conventions); never rewrite the whole file |
 
 ## Prerequisites
 
@@ -147,7 +148,11 @@ When the user names specific sections to update:
 - Append the new information at the end of the specified section. **Never replace or rewrite the section.**
 - If the user asks about something that would require restructuring the whole file, recommend they edit it manually instead.
 
-### Step 8: Output change summary
+### Step 8: Check CLAUDE.md / AGENTS.md
+
+If the session changed anything these files describe (project layout, commands, conventions, tech choices), point out the stale parts and ask the user whether to update them. Never rewrite the whole file; skip silently if nothing is stale or neither file exists.
+
+### Step 9: Output change summary
 
 Present a clear summary of everything that was updated:
 
