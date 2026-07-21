@@ -17,6 +17,10 @@
     "kilo": {
       "enabled": true,
       "target": "~/.kilo/skills/"
+    },
+    "codex": {
+      "enabled": true,
+      "target": "~/.agents/skills/"
     }
   }
 }
